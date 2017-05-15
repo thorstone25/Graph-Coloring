@@ -76,8 +76,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "/Users/wmeleis/2560-code/tree2/tree/graph1.txt";
-   
+   fileName = "color12-3.input";
    //   cout << "Enter filename" << endl;
    //   cin >> fileName;
    
@@ -88,16 +87,29 @@ int main()
       exit(1);
    }
    
+   
    try
     {
+      int m; // number of colors
       cout << "Reading graph" << endl;
+      fin >> m;
       Graph g;
       initializeGraph(g,fin);
 
-      cout << "Num nodes: " << num_vertices(g) << endl;
+      cout << "Num colors: " << m << endl;
+	  cout << "Num nodes: " << num_vertices(g) << endl;
       cout << "Num edges: " << num_edges(g) << endl;
       cout << endl;
       
       // cout << g;
    }
+   catch (indexRangeError &ex) 
+   { 
+      cout << ex.what() << endl; exit(1);
+   }
+   catch (rangeError &ex)
+   {
+      cout << ex.what() << endl; exit(1);
+   }
+   return 0;
 }
