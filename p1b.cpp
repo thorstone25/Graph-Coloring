@@ -4,7 +4,6 @@
 #include <limits.h>
 #include "d_except.h"
 #include <fstream>
-
 #include <boost/graph/adjacency_list.hpp>
 
 #define LargeValue 99999999
@@ -21,95 +20,95 @@ typedef adjacency_list<vecS, vecS, bidirectionalS, VertexProperties, EdgePropert
 
 struct VertexProperties
 {
-   pair<int,int> cell; // maze cell (x,y) value
-   Graph::vertex_descriptor pred;
-   bool visited;
-   bool marked;
-   int weight;
+	pair<int,int> cell; // maze cell (x,y) value
+	Graph::vertex_descriptor pred;
+	bool visited;
+	bool marked;
+	int weight;
 };
 
 // Create a struct to hold properties for each edge
 struct EdgeProperties
 {
-   int weight;
-   bool visited;
-   bool marked;
+	int weight;
+	bool visited;
+	bool marked;
 };
 
 void initializeGraph(Graph &g, ifstream &fin)
 // Initialize g using data from fin.  
 {
-   int n, e;
-   int j,k;
+	int n, e;
+	int j,k;
 
-   fin >> n >> e;
-   Graph::vertex_descriptor v;
-   
-   // Add nodes.
-   for (int i = 0; i < n; i++)
-      v = add_vertex(g);
-   
-   for (int i = 0; i < e; i++)
-   {
-      fin >> j >> k;
-      add_edge(j,k,g);  // Assumes vertex list is type vecS
-   }
+	fin >> n >> e;
+	Graph::vertex_descriptor v;
+
+	// Add nodes.
+	for (int i = 0; i < n; i++)
+	v = add_vertex(g);
+
+	for (int i = 0; i < e; i++)
+	{
+		fin >> j >> k;
+		add_edge(j,k,g);  // Assumes vertex list is type vecS
+	}
 }
 
 void setNodeWeights(Graph &g, int w)
 // Set all node weights to w.
 {
-   pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
-   
-   for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
-   {
-      g[*vItr].weight = w;
-   }
+	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
+
+	for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
+	{
+		g[*vItr].weight = w;
+	}
 }
 
 int main()
 {
-   char x;
-   ifstream fin;
-   string fileName;
-   
-   // Read the name of the graph from the keyboard or
-   // hard code it here for testing.
-   
-   fileName = "color12-3.input";
-   //   cout << "Enter filename" << endl;
-   //   cin >> fileName;
-   
-   fin.open(fileName.c_str());
-   if (!fin)
-   {
-      cerr << "Cannot open " << fileName << endl;
-      exit(1);
-   }
-   
-   
-   try
-    {
-      int m; // number of colors
-      cout << "Reading graph" << endl;
-      fin >> m;
-      Graph g;
-      initializeGraph(g,fin);
+	char x;
+	ifstream fin;
+	string fileName;
 
-      cout << "Num colors: " << m << endl;
-	  cout << "Num nodes: " << num_vertices(g) << endl;
-      cout << "Num edges: " << num_edges(g) << endl;
-      cout << endl;
-      
-      // cout << g;
-   }
-   catch (indexRangeError &ex) 
-   { 
-      cout << ex.what() << endl; exit(1);
-   }
-   catch (rangeError &ex)
-   {
-      cout << ex.what() << endl; exit(1);
-   }
-   return 0;
+	// Read the name of the graph from the keyboard or
+	// hard code it here for testing.
+
+	fileName = "color12-3.input";
+
+	//   cout << "Enter filename" << endl;
+	//   cin >> fileName;
+
+	fin.open(fileName.c_str());
+	if (!fin)
+	{
+		cerr << "Cannot open " << fileName << endl;
+		exit(1);
+	}
+
+	try
+	{
+		int m; // number of colors
+		cout << "Reading graph" << endl;
+		fin >> m;
+		Graph g;
+		initializeGraph(g,fin);
+
+		cout << "Num colors: " << m << endl;
+		cout << "Num nodes: " << num_vertices(g) << endl;
+		cout << "Num edges: " << num_edges(g) << endl;
+		cout << endl;
+
+		// cout << g;
+		exit(0);
+	}
+	catch (indexRangeError &ex) 
+	{ 
+		cout << ex.what() << endl; exit(1);
+	}
+	catch (rangeError &ex)
+	{
+		cout << ex.what() << endl; exit(1);
+	}
 }

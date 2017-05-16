@@ -6,6 +6,7 @@ p1b.1*
 *.exe
 *.o
 *.dev
+*.*.*
 
 # Windows image file caches
 Thumbs.db
