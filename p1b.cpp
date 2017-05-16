@@ -66,6 +66,84 @@ void setNodeWeights(Graph &g, int w)
 	}
 }
 
+int getGraphConflicts(Graph &g)
+{
+	/* loop through all the edges, +1 for every edge with equal node values*/
+	// conflict placeholder
+	int conflicts = 0;
+	
+	// edge iteration range
+	pair<Graph::edge_iterator, Graph::edge_iterator> eItrRange = edges(g);
+	
+	// vertex 
+	
+	// loop though all edges
+	for (Graph::edge_iterator eItr= eItrRange.first; eItr != eItrRange.second; ++eItr)
+	{
+		// get the target
+		Graph::vertex_descriptor v = target(*eItr, g);
+		
+		// get the source
+		Graph::vertex_descriptor u = source(*eItr, g);
+		
+		// if the weights are equal, +1 conflict!
+		if(g[v].weight == g[u].weight)
+		{
+			conflicts++;
+		}
+	}
+	return conflicts;
+}
+
+void findBestColoring(Graph &g, int m, Graph::vertex_iterator &current, Graph::vertex_iterator &end, Graph &b)
+{
+	/* if this is the end of the vertices, compute the conflicts, and compare to the best graph so far*/
+	// if at the end of the list of vertices
+	if(current == end)
+	{
+		// get the number of conflicts of this graph
+		int g_conflicts = getGraphConflicts(g);
+		
+		// get the number of conflicts of the best graph so far (b)
+		int b_conflicts = getGraphConflicts(b);
+		
+		// if this graph has fewer conflicts, set b to be this graph
+		b = (g_conflicts < b_conflicts ? g : b);
+	}
+
+	/* if not the end, loop through the different colors for this node, and do all permutations for the rest of the nodes */
+	else
+	{
+		for( int i = 0; i < m; i++)
+		{
+			// set this node to color i
+			g[*current].weight = i;
+			
+			// set color of the remaining nodes
+			++current;
+			findBestColoring(g,m,current,end,b);
+		}
+	}
+	
+}
+
+/* loop through all permutations of coloring to find the one with the least conflicts*/
+void findBestColoring(Graph &g, int m)
+{
+	// get reference to a new graph
+	Graph b = g;
+	
+	// get iterator to the vertices
+	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
+	
+	// iterate through all vertices and check all possible colorings
+	findBestColoring(g,m,vItrRange.first,vItrRange.second,b);
+	
+	// set g to be the best graph
+	g = b;
+}
+
+
 int main()
 {
 	char x;
@@ -99,6 +177,8 @@ int main()
 		cout << "Num nodes: " << num_vertices(g) << endl;
 		cout << "Num edges: " << num_edges(g) << endl;
 		cout << endl;
+		
+		findBestColoring(g,m);
 
 		// cout << g;
 		exit(0);
