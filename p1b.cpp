@@ -5,7 +5,7 @@
 #include "d_except.h"
 #include <fstream>
 #include <boost/graph/adjacency_list.hpp>
-
+#include <time.h>
 #define LargeValue 99999999
 
 using namespace std;
@@ -35,6 +35,17 @@ struct EdgeProperties
 	bool marked;
 };
 
+void setNodesUnvisited(Graph &g)
+// Set all node colors to w.
+{
+	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
+
+	for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
+	{
+		g[*vItr].visited = false;
+	}
+}
+
 void initializeGraph(Graph &g, ifstream &fin)
 // Initialize g using data from fin.  
 {
@@ -48,7 +59,6 @@ void initializeGraph(Graph &g, ifstream &fin)
 	for (int i = 0; i < n; i++)
 	{
 		v = add_vertex(g);
-		g[v].visted = false;
 	}
 
 	for (int i = 0; i < e; i++)
@@ -56,6 +66,8 @@ void initializeGraph(Graph &g, ifstream &fin)
 		fin >> j >> k;
 		add_edge(j,k,g);  // Assumes vertex list is type vecS
 	}
+	
+	setNodesUnvisited(g);
 }
 
 void setNodeColors(Graph &g, int c)
@@ -96,16 +108,27 @@ int getGraphConflicts(Graph &g)
 	return conflicts;
 }
 
-void findBestColoring(Graph &g, int m, Graph &b)
+void exhaustiveColoring(Graph &g, int m, Graph &b, clock_t startTime, int t_limit)
 {
+
+	// if time limit is exceeded, leave the function
+    unsigned long diff = clock()-startTime;
+    if( (float)t_limit <  (float)diff / CLOCKS_PER_SEC) 
+	{
+        return;
+    }
+	
 	/* if all vertices have been visited, compute the conflicts, and compare to the best graph so far
 	   if a vertex has yet to be visited, loop over all the possible combinations*/
 		
 	// get iterator to the vertices
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
 	
+	// get reference for the next unvisited node
+	Graph::vertex_iterator vItr;
+	
 	// find the next unvisited node
-	for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
+	for (vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
 	{
 		// if this node has not been visited, exit loop
 		if( (g[*vItr].visited ) == false)
@@ -137,10 +160,10 @@ void findBestColoring(Graph &g, int m, Graph &b)
 		for( int i = 0; i < m; i++)
 		{
 			// set this node to color i
-			g[*current].color = i + 1;
+			g[*vItr].color = i + 1;
 			
 			// set color of the remaining nodes
-			findBestColoring(g,m,b);
+			exhaustiveColoring(g, m, b, startTime, t_limit);
 		}
 		
 		// unvisit the node when finished going through all the colors
@@ -149,30 +172,49 @@ void findBestColoring(Graph &g, int m, Graph &b)
 	
 }
 
+void generateOutput (Graph &g, string filename) 
+{
+    ofstream myfile;
+    string filenameext = filename + ".output";
+    myfile.open (filenameext.c_str());
+    
+    myfile << "Total conflicts: " << getGraphConflicts(g) << endl;
+    for(int counter = 0; counter < num_vertices(g); counter++){
+        myfile << counter << " : " << g[counter].color << endl;
+    }
+    
+    myfile.close();
+}
+
+
 int main()
 {
 	char x;
 	ifstream fin;
-	string fileName;
+	string filenameext = "color12-3.input", filename;
 
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
 
-	fileName = "color12-3.input";
-
+	filename = filenameext.substr(0, filenameext.find_last_of("."));
+	fin.open(filenameext.c_str());
+	
 	//   cout << "Enter filename" << endl;
 	//   cin >> fileName;
 
-	fin.open(fileName.c_str());
 	if (!fin)
 	{
-		cerr << "Cannot open " << fileName << endl;
+		cerr << "Cannot open " << filenameext << endl;
 		exit(1);
 	}
 
 	try
 	{
 		int m; // number of colors
+		 // get time reference for start
+	    clock_t startTime;
+	    startTime = clock();
+	    
 		cout << "Reading graph" << endl;
 		fin >> m;
 		Graph g, b;
@@ -183,8 +225,11 @@ int main()
 		cout << "Num edges: " << num_edges(g) << endl;
 		cout << endl;
 		
-		findBestColoring(g,m,b);
+		exhaustiveColoring(g,m,b,startTime,600);
 
+		unsigned long diff = clock()-startTime;
+    	cout << endl << "Exhaustive Algorithm Total Runtime: " << (float) diff / CLOCKS_PER_SEC << "s" << endl;
+		generateOutput(g, filename);
 		// cout << g;
 		exit(0);
 	}
