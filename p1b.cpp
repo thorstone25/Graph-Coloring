@@ -11,7 +11,7 @@
 using namespace std;
 using namespace boost;
 
-int const NONE = -1;  // Used to represent a node that does not exist
+//int const NONE = -1;  // Used to represent a node that does not exist
 
 struct VertexProperties;
 struct EdgeProperties;
@@ -95,9 +95,16 @@ int getGraphConflicts(Graph &g)
 	return conflicts;
 }
 
-void findBestColoring(Graph &g, int m, Graph::vertex_iterator &current, Graph::vertex_iterator &end, Graph &b)
+void findBestColoring(Graph &g, int m, Graph::vertex_iterator &current, Graph::vertex_iterator &end, Graph &b, clock_t startTime, int t_limit)
 {
-	/* if this is the end of the vertices, compute the conflicts, and compare to the best graph so far*/
+    // if time limit is exceeded, leave the function
+    unsigned long diff = clock()-startTime;
+    if( (float)t_limit <  (float)diff / CLOCKS_PER_SEC) {
+        cout << "Time limit exceeded." << endl;
+        return;
+    }
+    
+    /* if this is the end of the vertices, compute the conflicts, and compare to the best graph so far*/
 	// if at the end of the list of vertices
 	if(current == end)
 	{
@@ -121,47 +128,69 @@ void findBestColoring(Graph &g, int m, Graph::vertex_iterator &current, Graph::v
 			
 			// set color of the remaining nodes
 			++current;
-			findBestColoring(g,m,current,end,b);
+			findBestColoring(g,m,current,end,b, startTime, t_limit);
 		}
 	}
 	
 }
 
 /* loop through all permutations of coloring to find the one with the least conflicts*/
-void findBestColoring(Graph &g, int m)
+void exhaustiveColoring(Graph &g, int m, int t)
 {
-	// get reference to a new graph
+    // get time reference for start
+    clock_t startTime;//, endTime;
+    startTime = clock();
+    
+    // get reference to a new graph
 	Graph b = g;
 	
 	// get iterator to the vertices
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
 	
 	// iterate through all vertices and check all possible colorings
-	findBestColoring(g,m,vItrRange.first,vItrRange.second,b);
+	findBestColoring(g,m,vItrRange.first,vItrRange.second,b, startTime, t);
 	
 	// set g to be the best graph
 	g = b;
+    
+    unsigned long diff = clock()-startTime;
+    cout << endl << "Exhaustive Algorithm Total Runtime: " << (float) diff / CLOCKS_PER_SEC << "s" << endl;
+}
+
+void generateOutput (Graph &g, string filename) {
+    ofstream myfile;
+    string filenameext = filename + ".output";
+    myfile.open (filenameext.c_str());
+    
+    myfile << "Total conflicts: " << getGraphConflicts(g) << endl;
+    for(int counter = 0; counter < num_vertices(g); counter++){
+        myfile << counter << " : " << g[counter].weight << endl;
+    }
+    
+    myfile.close();
 }
 
 
 int main()
 {
-	char x;
+	//char x;
 	ifstream fin;
-	string fileName;
+	string filenameext, filename;
 
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
 
-	fileName = "color12-3.input";
+	filenameext = "color12-3.input";
 
 	//   cout << "Enter filename" << endl;
 	//   cin >> fileName;
 
-	fin.open(fileName.c_str());
+    filename = filenameext.substr(0, filenameext.find_last_of("."));
+    
+	fin.open(filenameext.c_str());
 	if (!fin)
 	{
-		cerr << "Cannot open " << fileName << endl;
+		cerr << "Cannot open " << filenameext << endl;
 		exit(1);
 	}
 
@@ -178,9 +207,12 @@ int main()
 		cout << "Num edges: " << num_edges(g) << endl;
 		cout << endl;
 		
-		findBestColoring(g,m);
+		exhaustiveColoring(g,m,600);
+        
 
 		// cout << g;
+        generateOutput(g, filename);
+        
 		exit(0);
 	}
 	catch (indexRangeError &ex) 
