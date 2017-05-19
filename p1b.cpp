@@ -117,9 +117,9 @@ void exhaustiveColoring(Graph &g, int m, Graph &b, clock_t startTime, int t_limi
 	{
         return;
     }
-	
+    	
 	/* if all vertices have been visited, compute the conflicts, and compare to the best graph so far
-	   if a vertex has yet to be visited, loop over all the possible combinations*/
+	   if a vertex has yet to be visited, loop over all the possible color combinations*/
 		
 	// get iterator to the vertices
 	pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
@@ -147,7 +147,10 @@ void exhaustiveColoring(Graph &g, int m, Graph &b, clock_t startTime, int t_limi
 		int b_conflicts = getGraphConflicts(b);
 		
 		// if this graph has fewer conflicts, set b to be this graph
-		b = (g_conflicts < b_conflicts ? g : b);
+		if(g_conflicts < b_conflicts)
+		{
+			b = g;
+		}
 	}
 
 	/* if not the end, loop through the different colors for this node, and do all permutations for the rest of the nodes */
@@ -172,7 +175,7 @@ void exhaustiveColoring(Graph &g, int m, Graph &b, clock_t startTime, int t_limi
 	
 }
 
-void generateOutput (Graph &g, string filename) 
+void generateOutput (Graph &g, string filename, float runtime) 
 {
     ofstream myfile;
     string filenameext = filename + ".output";
@@ -182,16 +185,17 @@ void generateOutput (Graph &g, string filename)
     for(int counter = 0; counter < num_vertices(g); counter++){
         myfile << counter << " : " << g[counter].color << endl;
     }
+    myfile << "Time to completion: " << runtime << " seconds." << endl;
     
     myfile.close();
 }
 
 
-int main()
+int p1b(string filenameext)
 {
 	char x;
 	ifstream fin;
-	string filenameext = "color12-3.input", filename;
+	string filename;
 
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
@@ -219,6 +223,8 @@ int main()
 		fin >> m;
 		Graph g, b;
 		initializeGraph(g,fin);
+		b = g;
+		setNodeColors(b,1); // set all nodes in b to the same color for maximum conflict
 
 		cout << "Num colors: " << m << endl;
 		cout << "Num nodes: " << num_vertices(g) << endl;
@@ -226,12 +232,13 @@ int main()
 		cout << endl;
 		
 		exhaustiveColoring(g,m,b,startTime,600);
-
 		unsigned long diff = clock()-startTime;
-    	cout << endl << "Exhaustive Algorithm Total Runtime: " << (float) diff / CLOCKS_PER_SEC << "s" << endl;
-		generateOutput(g, filename);
+    	float runTime = (float) diff / CLOCKS_PER_SEC;
+		cout << endl << "Exhaustive Algorithm Total Runtime: " << runTime << "s" << endl;
+		generateOutput(b, filename, runTime);
 		// cout << g;
-		exit(0);
+		// exit(0);
+		return 0;
 	}
 	catch (indexRangeError &ex) 
 	{ 
@@ -241,4 +248,20 @@ int main()
 	{
 		cout << ex.what() << endl; exit(1);
 	}
+}
+
+int main()
+{
+	p1b("color12-3.input");
+	p1b("color12-4.input");
+	p1b("color24-4.input");
+	p1b("color24-5.input");
+	return 0;
+	p1b("color48-5.input");
+	p1b("color48-6.input");
+	p1b("color96-6.input");
+	p1b("color96-7.input");
+	p1b("color192-6.input");
+	p1b("color192-7.input");
+	p1b("color192-8.input");
 }
