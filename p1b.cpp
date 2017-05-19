@@ -256,7 +256,6 @@ int main()
 	p1b("color12-4.input");
 	p1b("color24-4.input");
 	p1b("color24-5.input");
-	return 0;
 	p1b("color48-5.input");
 	p1b("color48-6.input");
 	p1b("color96-6.input");
