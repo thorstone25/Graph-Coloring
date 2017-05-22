@@ -26,6 +26,7 @@ struct VertexProperties
 	bool marked;
 	int color;
 	int degree;
+	int ID;
 };
 
 // Create a struct to hold properties for each edge
@@ -72,12 +73,15 @@ void initializeGraph(Graph &g, ifstream &fin)
 	{
 		v = add_vertex(g);
 		g[v].degree = 0;
+		g[v].ID = i;
 	}
 	pair<Graph::edge_descriptor, bool> newEdge;
+	pair<Graph::edge_descriptor, bool> newEdge2;
 	for (int i = 0; i < e; i++)
 	{
 		fin >> j >> k;
 		newEdge = add_edge(j,k,g);  // Assumes vertex list is type vecS
+		newEdge2 = add_edge(k,j,g); 
 		g[target(newEdge.first,g)].degree++; // increase the degree of the target node
 		g[source(newEdge.first,g)].degree++; // increase the degree of the source node
 	}
@@ -222,21 +226,25 @@ void greedyColoring(Graph &g, int m, Graph &b)
 
 	// get a vector to store conflicts for each color
 	vector<int> conflicts;
-	
+		
 	// color the nodes in order of highest degree to lowest degree by fewest generated conflicts \\
 	// for every node in order of degree ...
 	for (int i = 0; i < V.size(); i++)
 	{	
-		// initialize conflicts to m entries each of value "0"
-		conflicts.resize(m,0); 
+		// reset to 0 conflicts
+		conflicts.clear(); // remove all elements from the vector
+		conflicts.resize(m,0); // initialize conflicts to m entries each of value "0"
+		
 		
 		// iterate across the adjacent nodes and get number of conflicts for each color
 		pair<Graph::adjacency_iterator, Graph::adjacency_iterator>  vItrRange = adjacent_vertices(V[i], g);
+		int j = 0;
 		for (Graph::adjacency_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
 		{
-			if(g[*vItr].color) // if this nodes has a color (0 if unassigned)
+			j++;
+			if(g[*vItr].color) // if this nodes has a color (0 if unassigned) and it's color 
 			{
-				conflicts[g[*vItr].color - 1] = conflicts[g[*vItr].color - 1] + 1; // increment the number of conflicts for this color
+				conflicts[g[*vItr].color - 1]++; // increment the number of conflicts for this color
 			}
 		}
 		
@@ -252,19 +260,27 @@ void greedyColoring(Graph &g, int m, Graph &b)
 			}
 		}
 		
-		// set the node to the color with the fewest conflicts
-		g[V[i]].color = best_color;
-
-		// DEBUG: PRINT GRAPH COLORS target node, and conflicts
-		pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange2 = vertices(g);
-		int j = 0;
-		for (Graph::vertex_iterator vItr= vItrRange2.first; vItr != vItrRange2.second; ++vItr)
+		/*
+		// DEBUG: PRINT GRAPH COLORS target node, and conflicts \\
+		
+		cout << endl << "Target Node: " << g[V[i]].ID << " with " << j << " options checked ----- " << endl;
+		for(int j = 0; j< V.size(); j++)
 		{
-			cout<< "Node " << j << ": color " << g[*vItr].color << endl; j++;
+			cout<< "Node " << g[V[j]].ID << ": color " << g[V[j]].color << " ; degree " << g[V[j]].degree << endl;	
 		}
 		
-		// 
-
+		cout << endl;
+		
+		for(int c = 0; c < m; c++)
+		{
+			cout << conflicts[c] << " conflicts with color " << c + 1<< endl;
+		}
+		
+		// DEBUG \\
+		*/
+		// set the node to the color with the fewest conflicts
+		g[V[i]].color = best_color;
+				
 		// #noregrats
 	}
 	
@@ -411,7 +427,6 @@ int p2b(string filenameext)
 int main()
 {
 	p2b("color12-3.input");
-	return 0;
 	p2b("color12-4.input");
 	p2b("color24-4.input");
 	p2b("color24-5.input");
