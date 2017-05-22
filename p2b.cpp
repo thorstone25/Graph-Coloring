@@ -71,6 +71,7 @@ void initializeGraph(Graph &g, ifstream &fin)
 	for (int i = 0; i < n; i++)
 	{
 		v = add_vertex(g);
+		g[v].degree = 0;
 	}
 	pair<Graph::edge_descriptor, bool> newEdge;
 	for (int i = 0; i < e; i++)
@@ -183,18 +184,19 @@ void exhaustiveColoring(Graph &g, int m, Graph &b, clock_t startTime, int t_limi
 void sortNodes(vector<Graph::vertex_descriptor> &V, Graph &g)
 {
 	Graph::vertex_descriptor temp;
-	for (int i = 0; i < V.size(); i++)
+	for (int i = 0; i < V.size() - 1; i++)
 	{
-		for (int j = i + 1; j < V.size(); j++)
+		for (int j = 1; j < V.size() - i; j++)
 		{
-			if(g[V[i]].degree < g[V[j]].degree)
+			if(g[V[j]].degree > g[V[j-1]].degree)
 			{
-				temp = V[i];
-				V[i] = V[j];
-				V[j] = temp;
+				temp = V[j];
+				V[j] = V[j-1];
+				V[j-1] = temp;
 			}
 		}
 	}
+	
 }
 
 void greedyColoring(Graph &g, int m, Graph &b)
@@ -234,24 +236,34 @@ void greedyColoring(Graph &g, int m, Graph &b)
 		{
 			if(g[*vItr].color) // if this nodes has a color (0 if unassigned)
 			{
-				conflicts[g[*vItr].color - 1]++; // increment the number of conflicts for this color
+				conflicts[g[*vItr].color - 1] = conflicts[g[*vItr].color - 1] + 1; // increment the number of conflicts for this color
 			}
 		}
 		
 		// iterate over conflicts and choose color with fewest conflicts
 		int best_color = 1;
 		int fewest_conflicts = num_vertices(g);
-		for(int j = 0; j < m; j++)
+		for(int c = 0; c < m; c++)
 		{
-			if(conflicts[j] < fewest_conflicts)
+			if(conflicts[c] < fewest_conflicts)
 			{
-				best_color = j + 1; // choose this color
-				fewest_conflicts = conflicts[j]; // update best color so far
+				best_color = c + 1; // choose this color
+				fewest_conflicts = conflicts[c]; // update best color so far
 			}
 		}
 		
 		// set the node to the color with the fewest conflicts
 		g[V[i]].color = best_color;
+
+		// DEBUG: PRINT GRAPH COLORS target node, and conflicts
+		pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange2 = vertices(g);
+		int j = 0;
+		for (Graph::vertex_iterator vItr= vItrRange2.first; vItr != vItrRange2.second; ++vItr)
+		{
+			cout<< "Node " << j << ": color " << g[*vItr].color << endl; j++;
+		}
+		
+		// 
 
 		// #noregrats
 	}
@@ -370,17 +382,17 @@ int p2b(string filenameext)
 		fin >> m;
 		Graph g, b;
 		initializeGraph(g,fin);
+		setNodeColors(g,0);
 		b = g;
 		
 		cout << "Num colors: " << m << endl;
 		cout << "Num nodes: " << num_vertices(g) << endl;
 		cout << "Num edges: " << num_edges(g) << endl;
-		cout << endl;
 		
 		greedyColoring(g,m,b);
 		unsigned long diff = clock()-startTime;
     	float runTime = (float) diff / CLOCKS_PER_SEC;
-		cout << endl << "Exhaustive Algorithm Total Runtime: " << runTime << "s" << endl;
+		cout << "Greedy Algorithm Total Runtime: " << runTime << "s" << endl << endl;
 		generateOutput(b, filename, runTime);
 		// cout << g;
 		// exit(0);
@@ -399,6 +411,7 @@ int p2b(string filenameext)
 int main()
 {
 	p2b("color12-3.input");
+	return 0;
 	p2b("color12-4.input");
 	p2b("color24-4.input");
 	p2b("color24-5.input");
