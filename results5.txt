@@ -1,0 +1,14 @@
+Project #4 Results
+Due: 6/25/17
+Thurston Brevett
+Pooja Jhaveri
+
+This project required writing local search algorithms to find better solutions for the Knapsack and Graph Coloring optimization problems.
+
+For Graph Coloring steepest descent was implemented by using the greedy algorithm as an initial solution and defining the neighborhood by swapping the colors of adjacent nodes. We found that the greedy algorithm already gave us locally optimal solutions since the steepest descent algorithm was not able to provide more optimal results. We also ran local search with the exhaustive algorithm (run for one minute) as the initial solution. In this case we found that steepest descent was successfully able to produce locally optimal results.
+
+The advanced algorithm we implemented for graph coloring was simulated annealing. We used both greedy and exhaustive approaches for initial solutions in this case as well. We found that in some cases the end result was less optimal than the initial solution because of the nature of simulated annealing; depending on probability, it is possible to accept a less optimal neighbor than the current solution. Output files for all of these cases as well as log files are included in the submission
+
+
+
+In summary, the local search algorithms developed for this project
