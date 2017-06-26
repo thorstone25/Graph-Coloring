@@ -8,6 +8,11 @@ p1b.1*
 *.dev
 *.*.*
 
+# Visual Studio Files
+*.suo
+*.sln
+*.vcxproj*
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
